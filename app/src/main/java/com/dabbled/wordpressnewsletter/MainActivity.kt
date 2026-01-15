@@ -6,6 +6,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -27,6 +30,12 @@ data class WordPressPost(
     val excerpt: String,
     val date: String,
     val link: String
+)
+
+// Data class for Locations
+data class Location(
+    val id: Int,
+    val title: String
 )
 
 // RecyclerView Adapter
@@ -75,11 +84,15 @@ class PostAdapter(
 class MainActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
+    private lateinit var locationSpinner: Spinner
+    private lateinit var welcomeView: View
     private lateinit var adapter: PostAdapter
     private val posts = mutableListOf<WordPressPost>()
+    private val locations = mutableListOf<Location>()
+    private var selectedLocationId: Int? = null
 
-    // WordPress site URL
-    private val WORDPRESS_URL = "https://www.yesyoucandance.org"
+    // WordPress site URL base (includes wp-json)
+    private val WORDPRESS_URL = "https://www.yesyoucandance.org/wp-json"
 
     // Pagination variables
     private var currentPage = 1
@@ -92,13 +105,195 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         Log.d("MainActivity", "onCreate: App started")
+        setupViews()
         setupRecyclerView()
-        fetchPosts(page = 1)
+        setupLocationSpinner()
+        fetchLocations()
+    }
+
+    private fun setupViews() {
+        welcomeView = findViewById(R.id.welcome_view)
+        recyclerView = findViewById(R.id.recycler_view)
+        locationSpinner = findViewById(R.id.location_spinner)
+
+        // Show welcome view initially
+        showWelcomeView()
+    }
+
+    private fun showWelcomeView() {
+        welcomeView.visibility = View.VISIBLE
+        recyclerView.visibility = View.GONE
+    }
+
+    private fun showPostsView() {
+        welcomeView.visibility = View.GONE
+        recyclerView.visibility = View.VISIBLE
+    }
+
+    private fun setupLocationSpinner() {
+        Log.d("MainActivity", "setupLocationSpinner: Setting up location spinner")
+
+        locationSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                if (position > 0 && locations.isNotEmpty()) {
+                    // position 0 is "Select a location", actual locations start at position 1
+                    val location = locations[position - 1]
+                    selectedLocationId = location.id
+                    Log.d("MainActivity", "Location selected: ${location.title} (ID: ${location.id})")
+                    showPostsView()
+                    fetchPosts(page = 1, locationId = location.id)
+                } else {
+                    selectedLocationId = null
+                    posts.clear()
+                    adapter.notifyDataSetChanged()
+                    showWelcomeView()
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                Log.d("MainActivity", "No location selected")
+                showWelcomeView()
+            }
+        }
+    }
+
+    private fun fetchLocations() {
+        Log.d("MainActivity", "fetchLocations: Starting to fetch locations")
+        Toast.makeText(this, "Loading locations...", Toast.LENGTH_SHORT).show()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                Log.d("MainActivity", "fetchLocations: Making API call")
+                val locationsData = getLocationsFromWordPress()
+                Log.d("MainActivity", "fetchLocations: API call successful, received ${locationsData.size} locations")
+
+                withContext(Dispatchers.Main) {
+                    if (locationsData.isEmpty()) {
+                        Log.w("MainActivity", "fetchLocations: No locations returned from API")
+                        Toast.makeText(
+                            this@MainActivity,
+                            "No locations available",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        return@withContext
+                    }
+
+                    locations.clear()
+                    locations.addAll(locationsData)
+
+                    // Create spinner items with "Select a location" as first item
+                    val spinnerItems = mutableListOf("Select a location")
+                    spinnerItems.addAll(locations.map { it.title })
+
+                    Log.d("MainActivity", "fetchLocations: Spinner items: $spinnerItems")
+
+                    val spinnerAdapter = ArrayAdapter(
+                        this@MainActivity,
+                        android.R.layout.simple_spinner_item,
+                        spinnerItems
+                    )
+                    spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    locationSpinner.adapter = spinnerAdapter
+
+                    Log.d("MainActivity", "fetchLocations: Spinner populated with ${locations.size} locations")
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Loaded ${locations.size} locations",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+            } catch (e: Exception) {
+                Log.e("MainActivity", "fetchLocations: Error fetching locations", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Error loading locations: ${e.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+    }
+
+    private suspend fun getLocationsFromWordPress(): List<Location> {
+        return withContext(Dispatchers.IO) {
+            val apiUrl = "$WORDPRESS_URL/ds/v1/locations"
+            Log.d("MainActivity", "getLocationsFromWordPress: Making request to: $apiUrl")
+
+            val url = URL(apiUrl)
+            val connection = url.openConnection() as HttpURLConnection
+
+            try {
+                connection.requestMethod = "GET"
+                connection.setRequestProperty("Accept", "application/json")
+                connection.connectTimeout = 10000
+                connection.readTimeout = 10000
+
+                val responseCode = connection.responseCode
+                Log.d("MainActivity", "getLocationsFromWordPress: Response code: $responseCode")
+
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    val reader = BufferedReader(InputStreamReader(connection.inputStream))
+                    val response = reader.readText()
+                    reader.close()
+
+                    Log.d("MainActivity", "getLocationsFromWordPress: Response received, length: ${response.length}")
+                    Log.v("MainActivity", "getLocationsFromWordPress: Response content: $response")
+
+                    val parsedLocations = parseLocationsJson(response)
+                    Log.d("MainActivity", "getLocationsFromWordPress: Parsed ${parsedLocations.size} locations")
+                    parsedLocations
+                } else {
+                    val errorStream = connection.errorStream
+                    val errorMessage = if (errorStream != null) {
+                        BufferedReader(InputStreamReader(errorStream)).readText()
+                    } else {
+                        "No error details"
+                    }
+                    Log.e("MainActivity", "getLocationsFromWordPress: HTTP Error $responseCode: $errorMessage")
+                    throw Exception("HTTP Error: $responseCode - $errorMessage")
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "getLocationsFromWordPress: Exception occurred", e)
+                throw e
+            } finally {
+                connection.disconnect()
+            }
+        }
+    }
+
+    private fun parseLocationsJson(jsonString: String): List<Location> {
+        Log.d("MainActivity", "parseLocationsJson: Starting to parse JSON")
+        val locations = mutableListOf<Location>()
+
+        try {
+            val jsonArray = JSONArray(jsonString)
+            Log.d("MainActivity", "parseLocationsJson: JSON array has ${jsonArray.length()} items")
+
+            for (i in 0 until jsonArray.length()) {
+                val jsonObject = jsonArray.getJSONObject(i)
+
+                val id = jsonObject.getInt("id")
+                val title = jsonObject.getString("title")
+
+                val location = Location(id, title)
+                locations.add(location)
+
+                Log.d("MainActivity", "parseLocationsJson: Parsed location $i - ID: $id, Title: $title")
+            }
+
+            Log.d("MainActivity", "parseLocationsJson: Successfully parsed ${locations.size} locations")
+        } catch (e: Exception) {
+            Log.e("MainActivity", "parseLocationsJson: Error parsing JSON", e)
+            throw e
+        }
+
+        return locations
     }
 
     private fun setupRecyclerView() {
         Log.d("MainActivity", "setupRecyclerView: Setting up RecyclerView")
-        recyclerView = findViewById(R.id.recycler_view)
         val layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
 
@@ -120,10 +315,12 @@ class MainActivity : AppCompatActivity() {
                 val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
 
                 // Check if we should load more posts
-                if (!isLoading && hasMorePages && dy > 0) { // Only load when scrolling down
+                if (!isLoading && hasMorePages && dy > 0) {
                     if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount - 2) {
-                        Log.d("MainActivity", "Triggering pagination load for page: ${currentPage + 1}")
-                        fetchPosts(page = currentPage + 1)
+                        selectedLocationId?.let { locationId ->
+                            Log.d("MainActivity", "Triggering pagination load for page: ${currentPage + 1}")
+                            fetchPosts(page = currentPage + 1, locationId = locationId)
+                        }
                     }
                 }
             }
@@ -140,32 +337,28 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun fetchPosts(page: Int = 1) {
+    private fun fetchPosts(page: Int = 1, locationId: Int) {
         if (isLoading) return
 
-        Log.d("MainActivity", "fetchPosts: Starting to fetch page $page")
+        Log.d("MainActivity", "fetchPosts: Starting to fetch page $page for location $locationId")
         isLoading = true
 
-        // Show a toast for first page loading
         if (page == 1) {
-            Toast.makeText(this, "Loading newsletters...", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Loading posts...", Toast.LENGTH_SHORT).show()
         }
 
-        // Use coroutines for network operations
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                Log.d("MainActivity", "fetchPosts: Making API call for page $page")
-                val postsData = getPostsFromWordPress(page)
+                Log.d("MainActivity", "fetchPosts: Making API call for page $page, location $locationId")
+                val postsData = getPostsFromWordPress(page, locationId)
                 Log.d("MainActivity", "fetchPosts: API call successful, received ${postsData.size} posts")
 
                 withContext(Dispatchers.Main) {
                     if (page == 1) {
-                        // First page - clear existing posts and recreate adapter
                         Log.d("MainActivity", "fetchPosts: Clearing posts and recreating adapter")
                         posts.clear()
                         posts.addAll(postsData)
 
-                        // Recreate adapter to ensure click listeners work
                         adapter = PostAdapter(posts) { post ->
                             Log.d("MainActivity", "Post clicked from recreated adapter: ${post.title}")
                             openArticle(post)
@@ -173,42 +366,38 @@ class MainActivity : AppCompatActivity() {
                         recyclerView.adapter = adapter
                         Log.d("MainActivity", "fetchPosts: Adapter recreated with ${posts.size} posts")
                     } else {
-                        // Subsequent pages - append new posts
                         val oldSize = posts.size
                         posts.addAll(postsData)
                         adapter.notifyItemRangeInserted(oldSize, postsData.size)
                         Log.d("MainActivity", "fetchPosts: Added ${postsData.size} posts, total now: ${posts.size}")
 
-                        // Show toast for pagination
                         if (postsData.isNotEmpty()) {
                             Toast.makeText(
                                 this@MainActivity,
-                                "Loaded ${postsData.size} more newsletters",
+                                "Loaded ${postsData.size} more posts",
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
                     }
 
-                    // Update pagination state
                     currentPage = page
                     hasMorePages = postsData.size == postsPerPage
                     isLoading = false
 
                     Log.d("MainActivity", "fetchPosts: Updated state - currentPage: $currentPage, hasMorePages: $hasMorePages")
 
-                    // Show message if no posts loaded
                     if (posts.isEmpty()) {
                         Log.w("MainActivity", "fetchPosts: No posts found")
                         Toast.makeText(
                             this@MainActivity,
-                            "No newsletters found",
+                            "No posts found for this location",
                             Toast.LENGTH_SHORT
                         ).show()
                     } else if (!hasMorePages && page > 1) {
                         Log.d("MainActivity", "fetchPosts: Reached end of posts")
                         Toast.makeText(
                             this@MainActivity,
-                            "No more newsletters to load",
+                            "No more posts to load",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -220,7 +409,7 @@ class MainActivity : AppCompatActivity() {
                     isLoading = false
                     Toast.makeText(
                         this@MainActivity,
-                        "Error loading newsletters: ${e.message}",
+                        "Error loading posts: ${e.message}",
                         Toast.LENGTH_LONG
                     ).show()
                 }
@@ -228,9 +417,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun getPostsFromWordPress(page: Int): List<WordPressPost> {
+    private suspend fun getPostsFromWordPress(page: Int, locationId: Int): List<WordPressPost> {
         return withContext(Dispatchers.IO) {
-            val apiUrl = "$WORDPRESS_URL/wp-json/wp/v2/posts?per_page=$postsPerPage&page=$page"
+            val apiUrl = "$WORDPRESS_URL/ds/v1/locations/$locationId/posts?per_page=$postsPerPage&page=$page"
             Log.d("MainActivity", "getPostsFromWordPress: Making request to: $apiUrl")
 
             val url = URL(apiUrl)
@@ -239,6 +428,8 @@ class MainActivity : AppCompatActivity() {
             try {
                 connection.requestMethod = "GET"
                 connection.setRequestProperty("Accept", "application/json")
+                connection.connectTimeout = 10000
+                connection.readTimeout = 10000
 
                 val responseCode = connection.responseCode
                 Log.d("MainActivity", "getPostsFromWordPress: Response code: $responseCode")
@@ -255,9 +446,18 @@ class MainActivity : AppCompatActivity() {
                     Log.d("MainActivity", "getPostsFromWordPress: Parsed ${parsedPosts.size} posts")
                     parsedPosts
                 } else {
-                    Log.e("MainActivity", "getPostsFromWordPress: HTTP Error: $responseCode")
-                    throw Exception("HTTP Error: $responseCode")
+                    val errorStream = connection.errorStream
+                    val errorMessage = if (errorStream != null) {
+                        BufferedReader(InputStreamReader(errorStream)).readText()
+                    } else {
+                        "No error details"
+                    }
+                    Log.e("MainActivity", "getPostsFromWordPress: HTTP Error $responseCode: $errorMessage")
+                    throw Exception("HTTP Error: $responseCode - $errorMessage")
                 }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "getPostsFromWordPress: Exception occurred", e)
+                throw e
             } finally {
                 connection.disconnect()
             }
@@ -282,7 +482,6 @@ class MainActivity : AppCompatActivity() {
                 val date = jsonObject.getString("date")
                 val link = jsonObject.getString("link")
 
-                // Clean HTML tags from title and excerpt
                 val cleanTitle = title.replace(Regex("<.*?>"), "")
                 val cleanExcerpt = excerpt.replace(Regex("<.*?>"), "")
 

@@ -3,6 +3,7 @@ package com.dabbled.wordpressnewsletter
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -10,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -110,7 +112,7 @@ class MainActivity : AppCompatActivity() {
 
     // WordPress site URL base (includes wp-json)
     private val BASE_URL = "https://www.dandysite.com/yycd"
-    private val WORDPRESS_URL = "$BASE_URL/yycd/wp-json"
+    private val WORDPRESS_URL = "$BASE_URL/wp-json"
 
     // SharedPreferences constants
     private val PREFS_NAME = "YYCDPrefs"
@@ -142,8 +144,20 @@ class MainActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.recycler_view)
         locationSpinner = findViewById(R.id.location_spinner)
 
+        // Setup visit website button
+        val visitWebsiteButton: Button = findViewById(R.id.visit_website_button)
+        visitWebsiteButton.setOnClickListener {
+            openWebsite()
+        }
+
         // Show welcome view initially
         showWelcomeView()
+    }
+
+    private fun openWebsite() {
+        Log.d("MainActivity", "Opening website: $BASE_URL")
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(BASE_URL))
+        startActivity(intent)
     }
 
     private fun showWelcomeView() {

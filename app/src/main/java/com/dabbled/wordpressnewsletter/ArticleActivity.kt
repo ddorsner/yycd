@@ -2,8 +2,11 @@ package com.dabbled.wordpressnewsletter
 
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.view.MenuItem
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -15,7 +18,7 @@ class ArticleActivity : AppCompatActivity() {
 
     private lateinit var titleView: TextView
     private lateinit var featuredImageView: ImageView
-    private lateinit var contentView: TextView
+    private lateinit var contentWebView: WebView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,9 +38,9 @@ class ArticleActivity : AppCompatActivity() {
         // Setup views
         titleView = findViewById(R.id.article_title)
         featuredImageView = findViewById(R.id.article_featured_image)
-        contentView = findViewById(R.id.article_content)
+        contentWebView = findViewById(R.id.article_content_webview)
 
-        // Set content
+        // Set title
         titleView.text = articleTitle
 
         // Load featured image if available
@@ -49,9 +52,105 @@ class ArticleActivity : AppCompatActivity() {
             featuredImageView.visibility = android.view.View.GONE
         }
 
-        // Convert HTML content to styled text
-        val htmlContent = HtmlCompat.fromHtml(articleContent, HtmlCompat.FROM_HTML_MODE_COMPACT)
-        contentView.text = htmlContent
+        // Setup WebView for content
+        setupContentWebView(articleContent)
+    }
+
+    private fun setupContentWebView(htmlContent: String) {
+        // Configure WebView settings
+        contentWebView.settings.apply {
+            javaScriptEnabled = true
+            domStorageEnabled = true
+            loadWithOverviewMode = true
+            useWideViewPort = true
+            setSupportZoom(true)
+            builtInZoomControls = true
+            displayZoomControls = false
+        }
+
+        // Set WebViewClient to open links in external browser
+        contentWebView.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                // Open links in external browser
+                url?.let {
+                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(it))
+                    startActivity(intent)
+                }
+                return true
+            }
+        }
+
+        // Wrap content in HTML with proper styling
+        val styledHtml = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <style>
+                    body {
+                        font-family: sans-serif;
+                        font-size: 16px;
+                        line-height: 1.6;
+                        color: #333;
+                        padding: 0;
+                        margin: 0;
+                    }
+                    img {
+                        max-width: 100%;
+                        height: auto;
+                        display: block;
+                        margin: 10px 0;
+                    }
+                    video {
+                        max-width: 100%;
+                        height: auto;
+                        display: block;
+                        margin: 10px 0;
+                    }
+                    iframe {
+                        max-width: 100%;
+                        margin: 10px 0;
+                    }
+                    p {
+                        margin: 10px 0;
+                    }
+                    a {
+                        color: #1976D2;
+                        text-decoration: none;
+                    }
+                    a:hover {
+                        text-decoration: underline;
+                    }
+                    h1, h2, h3, h4, h5, h6 {
+                        margin: 15px 0 10px 0;
+                        color: #222;
+                    }
+                    ul, ol {
+                        margin: 10px 0;
+                        padding-left: 30px;
+                    }
+                    blockquote {
+                        border-left: 4px solid #ddd;
+                        padding-left: 15px;
+                        margin: 10px 0;
+                        color: #666;
+                    }
+                    .wp-block-embed,
+                    .wp-block-video {
+                        margin: 10px 0;
+                    }
+                </style>
+            </head>
+            <body>
+                $htmlContent
+            </body>
+            </html>
+        """.trimIndent()
+
+        // Load the HTML content
+        contentWebView.loadDataWithBaseURL(null, styledHtml, "text/html", "UTF-8", null)
+
+        Log.d("ArticleActivity", "Content loaded into WebView")
     }
 
     private fun loadImage(imageUrl: String) {

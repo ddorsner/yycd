@@ -1,6 +1,8 @@
 package com.dabbled.wordpressnewsletter
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -26,16 +28,30 @@ import java.net.URL
 data class WordPressPost(
     val id: Int,
     val title: String,
-    val content: String,
+    val url: String,
     val excerpt: String,
+    val content: String,
     val date: String,
-    val link: String
+    val featured_image: String,
+    val sticky: Boolean
 )
 
 // Data class for Locations
 data class Location(
     val id: Int,
-    val title: String
+    val title: String,
+    val name: String,
+    val city: String,
+    val address: String,
+    val phone: String,
+    val email: String,
+    val contact: String,
+    val description: String,
+    val yycd_description: String,
+    val logo_id: Int?,
+    val logo_url: String,
+    val latitude: String,
+    val longitude: String
 )
 
 // RecyclerView Adapter
@@ -87,12 +103,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var locationSpinner: Spinner
     private lateinit var welcomeView: View
     private lateinit var adapter: PostAdapter
+    private lateinit var sharedPreferences: SharedPreferences
     private val posts = mutableListOf<WordPressPost>()
     private val locations = mutableListOf<Location>()
     private var selectedLocationId: Int? = null
 
     // WordPress site URL base (includes wp-json)
-    private val WORDPRESS_URL = "https://www.yesyoucandance.org/wp-json"
+    private val BASE_URL = "https://www.dandysite.com/yycd"
+    private val WORDPRESS_URL = "$BASE_URL/yycd/wp-json"
+
+    // SharedPreferences constants
+    private val PREFS_NAME = "YYCDPrefs"
+    private val PREF_SELECTED_LOCATION_ID = "selected_location_id"
 
     // Pagination variables
     private var currentPage = 1
@@ -105,6 +127,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         Log.d("MainActivity", "onCreate: App started")
+
+        // Initialize SharedPreferences
+        sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
         setupViews()
         setupRecyclerView()
         setupLocationSpinner()
@@ -139,11 +165,19 @@ class MainActivity : AppCompatActivity() {
                     // position 0 is "Select a location", actual locations start at position 1
                     val location = locations[position - 1]
                     selectedLocationId = location.id
+
+                    // Save the selected location ID to SharedPreferences
+                    sharedPreferences.edit().putInt(PREF_SELECTED_LOCATION_ID, location.id).apply()
+
                     Log.d("MainActivity", "Location selected: ${location.title} (ID: ${location.id})")
                     showPostsView()
                     fetchPosts(page = 1, locationId = location.id)
                 } else {
                     selectedLocationId = null
+
+                    // Clear the saved location
+                    sharedPreferences.edit().remove(PREF_SELECTED_LOCATION_ID).apply()
+
                     posts.clear()
                     adapter.notifyDataSetChanged()
                     showWelcomeView()
@@ -196,6 +230,10 @@ class MainActivity : AppCompatActivity() {
                     locationSpinner.adapter = spinnerAdapter
 
                     Log.d("MainActivity", "fetchLocations: Spinner populated with ${locations.size} locations")
+
+                    // Restore previously selected location if it exists
+                    restoreSelectedLocation()
+
                     Toast.makeText(
                         this@MainActivity,
                         "Loaded ${locations.size} locations",
@@ -263,24 +301,61 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun restoreSelectedLocation() {
+        val savedLocationId = sharedPreferences.getInt(PREF_SELECTED_LOCATION_ID, -1)
+
+        if (savedLocationId != -1) {
+            Log.d("MainActivity", "restoreSelectedLocation: Restoring location ID: $savedLocationId")
+
+            // Find the location in the list
+            val locationIndex = locations.indexOfFirst { it.id == savedLocationId }
+
+            if (locationIndex != -1) {
+                // Set spinner selection (add 1 because position 0 is "Select a location")
+                locationSpinner.setSelection(locationIndex + 1)
+                Log.d("MainActivity", "restoreSelectedLocation: Restored location at position ${locationIndex + 1}")
+            } else {
+                Log.w("MainActivity", "restoreSelectedLocation: Saved location ID not found in current locations")
+            }
+        } else {
+            Log.d("MainActivity", "restoreSelectedLocation: No saved location found")
+        }
+    }
+
     private fun parseLocationsJson(jsonString: String): List<Location> {
         Log.d("MainActivity", "parseLocationsJson: Starting to parse JSON")
         val locations = mutableListOf<Location>()
 
         try {
-            val jsonArray = JSONArray(jsonString)
-            Log.d("MainActivity", "parseLocationsJson: JSON array has ${jsonArray.length()} items")
+            val jsonObject = JSONObject(jsonString)
+            val locationsArray = jsonObject.getJSONArray("locations")
+            Log.d("MainActivity", "parseLocationsJson: JSON array has ${locationsArray.length()} items")
 
-            for (i in 0 until jsonArray.length()) {
-                val jsonObject = jsonArray.getJSONObject(i)
+            for (i in 0 until locationsArray.length()) {
+                val locationObj = locationsArray.getJSONObject(i)
 
-                val id = jsonObject.getInt("id")
-                val title = jsonObject.getString("title")
+                val id = locationObj.getInt("id")
+                val title = locationObj.getString("title")
+                val name = locationObj.optString("name", "")
+                val city = locationObj.optString("city", "")
+                val address = locationObj.optString("address", "")
+                val phone = locationObj.optString("phone", "")
+                val email = locationObj.optString("email", "")
+                val contact = locationObj.optString("contact", "")
+                val description = locationObj.optString("description", "")
+                val yycd_description = locationObj.optString("yycd_description", "")
+                val logo_id = if (locationObj.isNull("logo_id")) null else locationObj.getInt("logo_id")
+                val logo_url = locationObj.optString("logo_url", "")
+                val latitude = locationObj.optString("latitude", "")
+                val longitude = locationObj.optString("longitude", "")
 
-                val location = Location(id, title)
+                val location = Location(
+                    id, title, name, city, address, phone, email, contact,
+                    description, yycd_description, logo_id, logo_url, latitude, longitude
+                )
                 locations.add(location)
 
-                Log.d("MainActivity", "parseLocationsJson: Parsed location $i - ID: $id, Title: $title")
+                Log.d("MainActivity", "parseLocationsJson: Parsed location $i - ID: $id, Title: $title, Name: $name")
             }
 
             Log.d("MainActivity", "parseLocationsJson: Successfully parsed ${locations.size} locations")
@@ -328,12 +403,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openArticle(post: WordPressPost) {
-        Log.d("MainActivity", "Opening article: ${post.link}")
+        Log.d("MainActivity", "Opening article: ${post.title}")
         Toast.makeText(this, "Opening: ${post.title}", Toast.LENGTH_SHORT).show()
 
         val intent = Intent(this, ArticleActivity::class.java)
-        intent.putExtra("article_url", post.link)
         intent.putExtra("article_title", post.title)
+        intent.putExtra("article_content", post.content)
+        intent.putExtra("article_featured_image", post.featured_image)
         startActivity(intent)
     }
 
@@ -469,26 +545,28 @@ class MainActivity : AppCompatActivity() {
         val posts = mutableListOf<WordPressPost>()
 
         try {
-            val jsonArray = JSONArray(jsonString)
-            Log.d("MainActivity", "parsePostsJson: JSON array has ${jsonArray.length()} items")
+            val jsonObject = JSONObject(jsonString)
+            val postsObject = jsonObject.getJSONObject("posts")
+            val itemsArray = postsObject.getJSONArray("items")
 
-            for (i in 0 until jsonArray.length()) {
-                val jsonObject = jsonArray.getJSONObject(i)
+            Log.d("MainActivity", "parsePostsJson: JSON array has ${itemsArray.length()} items")
 
-                val id = jsonObject.getInt("id")
-                val title = jsonObject.getJSONObject("title").getString("rendered")
-                val content = jsonObject.getJSONObject("content").getString("rendered")
-                val excerpt = jsonObject.getJSONObject("excerpt").getString("rendered")
-                val date = jsonObject.getString("date")
-                val link = jsonObject.getString("link")
+            for (i in 0 until itemsArray.length()) {
+                val postObject = itemsArray.getJSONObject(i)
 
-                val cleanTitle = title.replace(Regex("<.*?>"), "")
-                val cleanExcerpt = excerpt.replace(Regex("<.*?>"), "")
+                val id = postObject.getInt("id")
+                val title = postObject.getString("title")
+                val url = postObject.getString("url")
+                val excerpt = postObject.getString("excerpt")
+                val content = postObject.getString("content")
+                val date = postObject.getString("date")
+                val featured_image = postObject.optString("featured_image", "")
+                val sticky = postObject.optBoolean("sticky", false)
 
-                val post = WordPressPost(id, cleanTitle, content, cleanExcerpt, date, link)
+                val post = WordPressPost(id, title, url, excerpt, content, date, featured_image, sticky)
                 posts.add(post)
 
-                Log.d("MainActivity", "parsePostsJson: Parsed post $i - ID: $id, Title: $cleanTitle, Link: $link")
+                Log.d("MainActivity", "parsePostsJson: Parsed post $i - ID: $id, Title: $title, URL: $url")
             }
 
             Log.d("MainActivity", "parsePostsJson: Successfully parsed ${posts.size} posts")

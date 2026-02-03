@@ -4,35 +4,37 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
+    android:padding="@dimen/spacing_base"
+    android:background="@color/white"
     tools:context=".MainActivity">
 
     <TextView
         android:id="@+id/title_text"
+        style="@style/TextAppearance.YYCD.Heading"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Yes, You Can Dance Posts"
-        android:textSize="24sp"
-        android:textStyle="bold"
+        android:text="Dance Studio Posts"
         android:gravity="center"
-        android:layout_marginBottom="40dp" />
+        android:layout_marginBottom="@dimen/spacing_base" />
 
     <TextView
+        style="@style/TextAppearance.YYCD.Caption"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Select a Location:"
-        android:textSize="16sp"
+        android:text="SELECT YOUR LOCATION"
         android:textStyle="bold"
-        android:layout_marginBottom="8dp" />
+        android:letterSpacing="0.1"
+        android:layout_marginBottom="@dimen/spacing_sm" />
 
     <Spinner
         android:id="@+id/location_spinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:padding="12dp"
-        android:background="@android:drawable/btn_dropdown"
-        android:spinnerMode="dropdown" />
+        android:layout_marginBottom="@dimen/spacing_base"
+        android:padding="@dimen/spacing_md"
+        android:background="@drawable/card_border_primary"
+        android:spinnerMode="dropdown"
+        android:minHeight="48dp" />
 
     <!-- Welcome/Logo view shown when no location is selected -->
     <LinearLayout
@@ -42,32 +44,33 @@
         android:layout_weight="1"
         android:orientation="vertical"
         android:gravity="center"
+        android:background="@color/background_tint"
+        android:padding="@dimen/spacing_lg"
         android:visibility="visible">
 
         <ImageView
             android:id="@+id/logo_image"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
+            android:layout_width="180dp"
+            android:layout_height="180dp"
             android:src="@mipmap/ic_launcher"
             android:contentDescription="App Logo"
-            android:layout_marginBottom="24dp" />
+            android:layout_marginBottom="@dimen/spacing_lg" />
 
         <TextView
+            style="@style/TextAppearance.YYCD.Subheading"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Welcome to Yes, You Can Dance"
-            android:textSize="20sp"
-            android:textStyle="bold"
+            android:text="Welcome to Dance Studio Posts"
             android:gravity="center"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="@dimen/spacing_base" />
 
         <TextView
+            style="@style/TextAppearance.YYCD.Body"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Please select a location above to view posts"
-            android:textSize="16sp"
             android:gravity="center"
-            android:textColor="@android:color/darker_gray" />
+            android:textColor="@color/text_secondary" />
 
     </LinearLayout>
 
@@ -78,16 +81,17 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:scrollbars="vertical"
+        android:clipToPadding="false"
+        android:paddingTop="@dimen/spacing_sm"
         android:visibility="gone" />
 
     <!-- Visit Website Button at bottom -->
     <Button
         android:id="@+id/visit_website_button"
+        style="@style/Widget.YYCD.Button.Primary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Visit Website"
-        android:textSize="16sp"
-        android:layout_marginTop="16dp"
-        android:padding="12dp" />
+        android:layout_marginTop="@dimen/spacing_base" />
 
 </LinearLayout>

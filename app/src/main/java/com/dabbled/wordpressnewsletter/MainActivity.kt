@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -25,6 +26,8 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import java.text.SimpleDateFormat
+import java.util.*
 
 // Data class for WordPress posts
 data class WordPressPost(
@@ -66,6 +69,7 @@ class PostAdapter(
         val titleText: TextView = view.findViewById(R.id.post_title)
         val excerptText: TextView = view.findViewById(R.id.post_excerpt)
         val dateText: TextView = view.findViewById(R.id.post_date)
+        val featuredImage: ImageView = view.findViewById(R.id.post_featured_image)
         val cardView: View = view
     }
 
@@ -82,7 +86,15 @@ class PostAdapter(
 
         holder.titleText.text = post.title
         holder.excerptText.text = post.excerpt
-        holder.dateText.text = post.date
+        holder.dateText.text = formatDate(post.date)
+
+        // Load featured image if available
+        if (post.featured_image.isNotEmpty() && post.featured_image != "false" && post.featured_image != "null") {
+            holder.featuredImage.visibility = View.VISIBLE
+            ImageLoader.loadImage(post.featured_image, holder.featuredImage)
+        } else {
+            holder.featuredImage.visibility = View.GONE
+        }
 
         // Set click listener for the entire card
         holder.cardView.setOnClickListener {
@@ -590,5 +602,25 @@ class MainActivity : AppCompatActivity() {
         }
 
         return posts
+    }
+}
+
+// Helper function to format dates
+private fun formatDate(isoDate: String): String {
+    return try {
+        val inputFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US)
+        val outputFormatter = SimpleDateFormat("MMM d, yyyy", Locale.US)
+        val date = inputFormatter.parse(isoDate)
+        outputFormatter.format(date ?: Date())
+    } catch (e: Exception) {
+        // Fallback for different date formats
+        try {
+            val altFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
+            val outputFormatter = SimpleDateFormat("MMM d, yyyy", Locale.US)
+            val date = altFormatter.parse(isoDate)
+            outputFormatter.format(date ?: Date())
+        } catch (e2: Exception) {
+            isoDate
+        }
     }
 }

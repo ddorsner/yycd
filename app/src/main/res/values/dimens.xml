@@ -1,3 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="fab_margin">16dp</dimen>
+    <!-- Spacing -->
+    <dimen name="spacing_xs">4dp</dimen>
+    <dimen name="spacing_sm">8dp</dimen>
+    <dimen name="spacing_md">12dp</dimen>
+    <dimen name="spacing_base">16dp</dimen>
+    <dimen name="spacing_lg">24dp</dimen>
+    <dimen name="spacing_xl">32dp</dimen>
+
+    <!-- Border Radius -->
+    <dimen name="radius_sm">8dp</dimen>
+    <dimen name="radius_base">12dp</dimen>
+    <dimen name="radius_lg">16dp</dimen>
+
+    <!-- Component Sizes -->
+    <dimen name="badge_size_small">40dp</dimen>
+    <dimen name="badge_size_large">60dp</dimen>
+    <dimen name="news_image_height">160dp</dimen>
+    <dimen name="hero_image_height">200dp</dimen>
 </resources>

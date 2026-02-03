@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base App Theme -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary</item>
+        <item name="colorAccent">@color/primary_medium</item>
+        <item name="android:windowBackground">@color/white</item>
+    </style>
+
+    <!-- Text Styles -->
+    <style name="TextAppearance.YYCD.Heading" parent="TextAppearance.AppCompat">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:fontFamily">serif</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.YYCD.Subheading" parent="TextAppearance.AppCompat">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.YYCD.Body" parent="TextAppearance.AppCompat">
+        <item name="android:textColor">@color/text_body</item>
+        <item name="android:textSize">16sp</item>
+        <item name="lineHeight">24sp</item>
+    </style>
+
+    <style name="TextAppearance.YYCD.Caption" parent="TextAppearance.AppCompat">
+        <item name="android:textColor">@color/text_meta</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <!-- Button Styles -->
+    <style name="Widget.YYCD.Button.Primary" parent="Widget.AppCompat.Button">
+        <item name="android:background">@drawable/button_primary_background</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingBottom">12dp</item>
+        <item name="android:paddingStart">24dp</item>
+        <item name="android:paddingEnd">24dp</item>
+        <item name="android:minHeight">48dp</item>
+    </style>
+
+    <!-- Card Styles -->
+    <style name="Widget.YYCD.CardView" parent="CardView">
+        <item name="cardCornerRadius">@dimen/radius_base</item>
+        <item name="cardElevation">2dp</item>
+        <item name="cardBackgroundColor">@color/white</item>
+    </style>
+
+    <style name="Widget.YYCD.CardView.Featured" parent="Widget.YYCD.CardView">
+        <item name="strokeColor">@color/primary</item>
+        <item name="strokeWidth">2dp</item>
+    </style>
+</resources>

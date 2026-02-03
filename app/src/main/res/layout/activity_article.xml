@@ -8,21 +8,19 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingTop="16dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="16dp">
+        android:paddingTop="@dimen/spacing_base"
+        android:paddingStart="@dimen/spacing_base"
+        android:paddingEnd="@dimen/spacing_base"
+        android:paddingBottom="@dimen/spacing_base">
 
         <TextView
             android:id="@+id/article_title"
+            style="@style/TextAppearance.YYCD.Heading"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black"
-            android:layout_marginBottom="40dp" />
+            android:layout_marginBottom="50dp" />
 
         <ImageView
             android:id="@+id/article_featured_image"
@@ -30,7 +28,7 @@
             android:layout_height="200dp"
             android:scaleType="centerCrop"
             android:contentDescription="Featured Image"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="@dimen/spacing_base"
             android:visibility="visible" />
 
         <WebView

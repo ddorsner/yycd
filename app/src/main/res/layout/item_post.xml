@@ -1,47 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.YYCD.CardView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
+    android:layout_marginStart="@dimen/spacing_sm"
+    android:layout_marginEnd="@dimen/spacing_sm"
+    android:layout_marginTop="@dimen/spacing_sm"
+    android:layout_marginBottom="@dimen/spacing_sm"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    app:cardCornerRadius="@dimen/radius_base"
+    app:cardElevation="2dp">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/post_title"
+        <!-- Featured Image (if available) -->
+        <ImageView
+            android:id="@+id/post_featured_image"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/news_image_height"
+            android:scaleType="centerCrop"
+            android:contentDescription="Post Image"
+            android:visibility="gone" />
+
+        <!-- Post Content -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:textColor="@android:color/black"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_base">
 
-        <TextView
-            android:id="@+id/post_excerpt"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:ellipsize="end"
-            android:maxLines="3"
-            android:textColor="@android:color/darker_gray"
-            android:textSize="14sp" />
+            <!-- Date -->
+            <TextView
+                android:id="@+id/post_date"
+                style="@style/TextAppearance.YYCD.Caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textStyle="normal"
+                android:layout_marginBottom="@dimen/spacing_sm" />
 
-        <TextView
-            android:id="@+id/post_date"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@android:color/darker_gray"
-            android:textSize="12sp"
-            android:textStyle="italic" />
+            <!-- Title -->
+            <TextView
+                android:id="@+id/post_title"
+                style="@style/TextAppearance.YYCD.Subheading"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_sm"
+                android:lineSpacingMultiplier="1.2" />
+
+            <!-- Excerpt -->
+            <TextView
+                android:id="@+id/post_excerpt"
+                style="@style/TextAppearance.YYCD.Body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="3"
+                android:ellipsize="end"
+                android:lineSpacingMultiplier="1.5" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

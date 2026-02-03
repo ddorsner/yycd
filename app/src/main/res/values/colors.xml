@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Primary Palette -->
+    <color name="primary">#38427A</color>
+    <color name="primary_medium">#5A65A1</color>
+    <color name="primary_light">#7A84B5</color>
+    <color name="background_tint">#F5F7FA</color>
+    <color name="white">#FFFFFF</color>
+
+    <!-- Text Colors -->
+    <color name="text_primary">#38427A</color>
+    <color name="text_secondary">#5A65A1</color>
+    <color name="text_body">#666666</color>
+    <color name="text_meta">#999999</color>
+
+    <!-- Borders -->
+    <color name="border_light">#F0F0F0</color>
+    <color name="border_primary">#38427A</color>
 </resources>

@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">YesYouCanDance</string>
+    <string name="app_name">Yes, You Can Dance!</string>
     <string name="action_settings">Settings</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
-    <string name="yes_you_can_dance_newsletter">Yes! You Can Dance Newsletter</string>
+    <string name="yes_you_can_dance_newsletter">Yes, You Can Dance! Newsletter</string>
     <string name="wordpress_url">https://www.yesyoucandance.org/</string>
 </resources>

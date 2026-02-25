@@ -1,53 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="@dimen/spacing_base"
-    android:background="@color/white"
+    android:fillViewport="true"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/title_text"
-        style="@style/TextAppearance.YYCD.Heading"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Yes, You Can Dance!"
-        android:gravity="center"
-        android:layout_marginBottom="@dimen/spacing_base" />
-
-    <TextView
-        style="@style/TextAppearance.YYCD.Caption"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="SELECT YOUR LOCATION"
-        android:textStyle="bold"
-        android:letterSpacing="0.1"
-        android:layout_marginBottom="@dimen/spacing_sm" />
-
-    <Spinner
-        android:id="@+id/location_spinner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/spacing_base"
-        android:padding="@dimen/spacing_md"
-        android:background="@drawable/card_border_primary"
-        android:spinnerMode="dropdown"
-        android:minHeight="48dp" />
-
-    <!-- Welcome/Logo view shown when no location is selected -->
     <LinearLayout
-        android:id="@+id/welcome_view"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center"
-        android:background="@color/background_tint"
-        android:padding="@dimen/spacing_lg"
-        android:visibility="visible">
+        android:padding="10dp"
+        android:gravity="center_horizontal">
 
+        <TextView
+            android:id="@+id/location_title_sp"
+            android:layout_width="match_parent"
+            android:layout_height="75dp"
+            android:gravity="center"
+            android:text=""
+            android:textColor="@color/black"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <!-- Logo placeholder -->
         <ImageView
             android:id="@+id/logo_image"
             android:layout_width="180dp"
@@ -57,41 +33,44 @@
             android:layout_marginBottom="@dimen/spacing_lg" />
 
         <TextView
-            style="@style/TextAppearance.YYCD.Subheading"
-            android:layout_width="wrap_content"
+            android:id="@+id/title_text"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Welcome to Yes, You Can Dance!"
+            android:text="@string/yes_you_can_dance_newsletter"
+            android:textSize="28sp"
+            android:textStyle="bold"
             android:gravity="center"
-            android:layout_marginBottom="@dimen/spacing_base" />
+            android:layout_marginBottom="16dp"
+            android:textColor="@color/black" />
 
         <TextView
-            style="@style/TextAppearance.YYCD.Body"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Please select a location above to view posts"
+            android:text="Stay connected with your local dance community. Select your location to view newsletters and updates."
+            android:textSize="16sp"
             android:gravity="center"
-            android:textColor="@color/text_secondary" />
+            android:layout_marginBottom="32dp"
+            android:textColor="?android:textColorSecondary" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Your Location:"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp"
+            android:textColor="@color/black" />
+
+        <Spinner
+            android:id="@+id/location_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:minHeight="48dp"
+            android:spinnerMode="dropdown"
+            android:background="@android:drawable/btn_dropdown"
+            android:padding="12dp" />
 
     </LinearLayout>
 
-    <!-- RecyclerView shown when location is selected -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:scrollbars="vertical"
-        android:clipToPadding="false"
-        android:paddingTop="@dimen/spacing_sm"
-        android:visibility="gone" />
-
-    <!-- Visit Website Button at bottom -->
-    <Button
-        android:id="@+id/visit_website_button"
-        style="@style/Widget.YYCD.Button.Primary"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Visit Website"
-        android:layout_marginTop="@dimen/spacing_base" />
-
-</LinearLayout>
+</ScrollView>

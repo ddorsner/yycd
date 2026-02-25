@@ -6,6 +6,7 @@
     <color name="primary_light">#7A84B5</color>
     <color name="background_tint">#F5F7FA</color>
     <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
 
     <!-- Text Colors -->
     <color name="text_primary">#38427A</color>

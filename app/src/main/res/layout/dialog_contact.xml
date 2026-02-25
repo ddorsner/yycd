@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <Button
+        android:id="@+id/btn_call"
+        style="?android:attr/borderlessButtonStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Call"
+        android:drawableLeft="@android:drawable/ic_menu_call"
+        android:drawablePadding="12dp"
+        android:gravity="start|center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:minHeight="56dp"
+        android:textSize="16sp"
+        android:textColor="@color/black" />
+
+    <Button
+        android:id="@+id/btn_text"
+        style="?android:attr/borderlessButtonStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Text"
+        android:drawableLeft="@android:drawable/ic_menu_send"
+        android:drawablePadding="12dp"
+        android:gravity="start|center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:minHeight="56dp"
+        android:textSize="16sp"
+        android:textColor="@color/black" />
+
+    <Button
+        android:id="@+id/btn_email"
+        style="?android:attr/borderlessButtonStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Email"
+        android:drawableLeft="@android:drawable/ic_dialog_email"
+        android:drawablePadding="12dp"
+        android:gravity="start|center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:minHeight="56dp"
+        android:textSize="16sp"
+        android:textColor="@color/black" />
+
+    <Button
+        android:id="@+id/btn_directions"
+        style="?android:attr/borderlessButtonStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Get Directions"
+        android:drawableLeft="@android:drawable/ic_dialog_map"
+        android:drawablePadding="12dp"
+        android:gravity="start|center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:minHeight="56dp"
+        android:textSize="16sp"
+        android:textColor="@color/black" />
+
+</LinearLayout>

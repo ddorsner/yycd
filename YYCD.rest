@@ -1,0 +1,23 @@
+@WORDPRESS_URL = https://www.yesyoucandance.org/wp-json
+@NAME_SPACE = /ds/v1
+@FULL_URL = {{WORDPRESS_URL}}{{NAME_SPACE}}
+####
+# Posts Endpoint with Pagination
+@postsPerPage = 20
+@page = 1
+{{FULL_URL}}/posts?per_page={{postsPerPage}}&page={{page}}
+
+####
+# Locations Endpoint
+{{FULL_URL}}/locations
+
+####
+#Location by Slug
+@slug = atlanta
+{{FULL_URL}}/locations?slug={{slug}}
+
+####
+# Location by ID
+@id = 7935
+{{FULL_URL}}/locations/{{id}}/posts
+

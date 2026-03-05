@@ -6,7 +6,9 @@ import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.ImageView
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.*
@@ -23,9 +25,19 @@ data class Location(
     val name: String
 )
 
+// Data class for Splash screen data
+data class SplashData(
+    val titleUrl: String,
+    val splashUrl: String,
+    val splashText: String
+)
+
 class MainActivity : AppCompatActivity() {
 
     private lateinit var locationSpinner: Spinner
+    private lateinit var logoImage: ImageView
+    private lateinit var splashImage: ImageView
+    private lateinit var titleText: TextView
     private val locations = mutableListOf<Location>()
 
     // WordPress site URL - Updated to custom API
@@ -36,7 +48,14 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         Log.d("MainActivity", "onCreate: App started")
+
+        // Initialize views
+        logoImage = findViewById(R.id.logo_image)
+        splashImage = findViewById(R.id.location_title_sp)
+        titleText = findViewById(R.id.title_text)
+
         setupLocationSpinner()
+        fetchSplashData()
         fetchLocations()
     }
 
@@ -61,6 +80,49 @@ class MainActivity : AppCompatActivity() {
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
                 // Do nothing
+            }
+        }
+    }
+
+    private fun fetchSplashData() {
+        Log.d("MainActivity", "fetchSplashData: Starting to fetch splash data")
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                Log.d("MainActivity", "fetchSplashData: Making API call")
+                val splashData = getSplashDataFromWordPress()
+                Log.d("MainActivity", "fetchSplashData: API call successful")
+
+                withContext(Dispatchers.Main) {
+                    // Update title text
+                    titleText.text = splashData.splashText
+
+                    // Load title/logo image
+                    if (splashData.titleUrl.isNotEmpty()) {
+                        ImageLoader.loadImage(splashData.titleUrl, logoImage)
+                        Log.d("MainActivity", "fetchSplashData: Loading logo from ${splashData.titleUrl}")
+                    }
+
+                    // Load splash image
+                    if (splashData.splashUrl.isNotEmpty()) {
+                        ImageLoader.loadImage(splashData.splashUrl, splashImage)
+                        Log.d("MainActivity", "fetchSplashData: Loading splash image from ${splashData.splashUrl}")
+                    } else {
+                        splashImage.visibility = View.GONE
+                    }
+                }
+
+            } catch (e: Exception) {
+                Log.e("MainActivity", "fetchSplashData: Error fetching splash data", e)
+                withContext(Dispatchers.Main) {
+                    // Use default text if fetch fails
+                    titleText.text = getString(R.string.yes_you_can_dance_newsletter)
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Error loading splash data: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
     }
@@ -108,6 +170,42 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private suspend fun getSplashDataFromWordPress(): SplashData {
+        return withContext(Dispatchers.IO) {
+            val apiUrl = "$WORDPRESS_URL/splash"
+            Log.d("MainActivity", "getSplashDataFromWordPress: Making request to: $apiUrl")
+
+            val url = URL(apiUrl)
+            val connection = url.openConnection() as HttpURLConnection
+
+            try {
+                connection.requestMethod = "GET"
+                connection.setRequestProperty("Accept", "application/json")
+
+                val responseCode = connection.responseCode
+                Log.d("MainActivity", "getSplashDataFromWordPress: Response code: $responseCode")
+
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    val reader = BufferedReader(InputStreamReader(connection.inputStream))
+                    val response = reader.readText()
+                    reader.close()
+
+                    Log.d("MainActivity", "getSplashDataFromWordPress: Response received, length: ${response.length}")
+                    Log.v("MainActivity", "getSplashDataFromWordPress: Response content: $response")
+
+                    val parsedSplashData = parseSplashJson(response)
+                    Log.d("MainActivity", "getSplashDataFromWordPress: Parsed splash data")
+                    parsedSplashData
+                } else {
+                    Log.e("MainActivity", "getSplashDataFromWordPress: HTTP Error: $responseCode")
+                    throw Exception("HTTP Error: $responseCode")
+                }
+            } finally {
+                connection.disconnect()
+            }
+        }
+    }
+
     private suspend fun getLocationsFromWordPress(): List<Location> {
         return withContext(Dispatchers.IO) {
             val apiUrl = "$WORDPRESS_URL/locations"
@@ -141,6 +239,29 @@ class MainActivity : AppCompatActivity() {
             } finally {
                 connection.disconnect()
             }
+        }
+    }
+
+    private fun parseSplashJson(jsonString: String): SplashData {
+        Log.d("MainActivity", "parseSplashJson: Starting to parse JSON")
+        Log.d("MainActivity", "parseSplashJson: Raw JSON: $jsonString")
+
+        try {
+            val jsonObject = JSONObject(jsonString)
+
+            val titleUrl = jsonObject.optString("title_url", "")
+            val splashUrl = jsonObject.optString("splash_url", "")
+            val splashText = jsonObject.optString("splash_text", "")
+
+            Log.d("MainActivity", "parseSplashJson: title_url: $titleUrl")
+            Log.d("MainActivity", "parseSplashJson: splash_url: $splashUrl")
+            Log.d("MainActivity", "parseSplashJson: splash_text: $splashText")
+
+            return SplashData(titleUrl, splashUrl, splashText)
+        } catch (e: Exception) {
+            Log.e("MainActivity", "parseSplashJson: Error parsing JSON", e)
+            Log.e("MainActivity", "parseSplashJson: JSON string was: $jsonString")
+            throw e
         }
     }
 

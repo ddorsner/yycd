@@ -6,6 +6,16 @@
     android:orientation="vertical"
     tools:context=".ArticleDetailActivity">
 
+    <TextView
+        android:id="@+id/location_title_spacer"
+        android:layout_width="match_parent"
+        android:layout_height="75dp"
+        android:gravity="center"
+        android:text=""
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
     <WebView
         android:id="@+id/webview"
         android:layout_width="match_parent"

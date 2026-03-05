@@ -31,7 +31,7 @@ data class WordPressPost(
     val excerpt: String,
     val content: String,
     val date: String,
-    val featuredImage: Boolean = false,
+    val featuredImage: String = "",  // Changed from Boolean to String for image URL
     val sticky: Boolean = false
 )
 
@@ -112,7 +112,7 @@ class ArticleActivity : AppCompatActivity() {
 
         // Enable back button in action bar
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "" // Clear default title
+        //supportActionBar?.title = "" // Clear default title
 
         // Get location ID from intent
         locationId = intent.getIntExtra("location_id", 0)
@@ -129,7 +129,6 @@ class ArticleActivity : AppCompatActivity() {
     }
 
     private fun setupViews() {
-        locationTitleText = findViewById(R.id.location_title)
         contactButton = findViewById(R.id.contact_button)
         recyclerView = findViewById(R.id.recycler_view)
 
@@ -164,11 +163,12 @@ class ArticleActivity : AppCompatActivity() {
     }
 
     private fun openArticleDetail(post: WordPressPost) {
-        Log.d("ArticleActivity", "Opening article detail: ${post.url}")
+        Log.d("ArticleActivity", "Opening article detail: ${post.title}")
 
         val intent = Intent(this, ArticleDetailActivity::class.java)
-        intent.putExtra("article_url", post.url)
+        intent.putExtra("article_content", post.content)
         intent.putExtra("article_title", post.title)
+        intent.putExtra("featured_image_url", post.featuredImage)
         startActivity(intent)
     }
 
@@ -178,8 +178,9 @@ class ArticleActivity : AppCompatActivity() {
                 val location = getLocationDetails(locationId)
 
                 withContext(Dispatchers.Main) {
+                    supportActionBar?.title = location.title
                     locationDetail = location
-                    locationTitleText.text = location.title
+                    //locationTitleText.text = location.title
                     Log.d("ArticleActivity", "Location details loaded: ${location.title}")
                 }
             } catch (e: Exception) {
@@ -355,7 +356,16 @@ class ArticleActivity : AppCompatActivity() {
                 val excerpt = postObject.getString("excerpt")
                 val content = postObject.getString("content")
                 val date = postObject.getString("date")
-                val featuredImage = postObject.optBoolean("featured_image", false)
+                val featuredImage = if (postObject.has("featured_image")) {
+                    val featuredImageValue = postObject.get("featured_image")
+                    if (featuredImageValue is String) {
+                        featuredImageValue  // It's a URL string
+                    } else {
+                        ""  // It's the boolean false, so no image
+                    }
+                } else {
+                    ""  // Field doesn't exist
+                }
                 val sticky = postObject.optBoolean("sticky", false)
 
                 posts.add(WordPressPost(id, title, url, excerpt, content, date, featuredImage, sticky))

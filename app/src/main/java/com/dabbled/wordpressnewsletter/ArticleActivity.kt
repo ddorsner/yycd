@@ -1,3 +1,6 @@
+/*
+* Copyright (c) 2026 Dabbled Studios
+*/
 package com.dabbled.wordpressnewsletter
 
 import android.content.Intent

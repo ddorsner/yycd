@@ -11,13 +11,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="10dp"
+        android:padding="2.5dp"
         android:gravity="center_horizontal">
 
         <TextView
             android:id="@+id/location_title_spacer"
             android:layout_width="match_parent"
-            android:layout_height="75dp"
+            android:layout_height="70dp"
             android:gravity="center"
             android:text=""
             android:textColor="@color/black"
@@ -27,23 +27,24 @@
         <!-- Splash Image (loaded from splash_url) -->
         <ImageView
             android:id="@+id/location_title_sp"
+            android:contentDescription="Splash Image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:adjustViewBounds="true"
-            android:scaleType="centerInside"
-            android:maxHeight="200dp"
-            android:contentDescription="Splash Image"
-            android:layout_marginBottom="@dimen/spacing_base"
-            android:visibility="gone" />
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:layout_marginEnd="@dimen/spacing_sm"
+            android:layout_marginBottom="@dimen/spacing_sm"
+            android:scaleType="fitCenter" />
 
         <!-- Logo Image (loaded from title_url) -->
         <ImageView
             android:id="@+id/logo_image"
-            android:layout_width="180dp"
-            android:layout_height="180dp"
-            android:scaleType="fitCenter"
             android:contentDescription="App Logo"
-            android:layout_marginBottom="@dimen/spacing_lg" />
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:layout_marginEnd="@dimen/spacing_sm"
+            android:layout_marginBottom="@dimen/spacing_lg"
+            android:scaleType="fitCenter" />
 
         <!-- Title Text (loaded from splash_text) -->
         <TextView

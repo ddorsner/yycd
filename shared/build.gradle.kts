@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.serialization)
     id("com.android.library")
+    id("org.jetbrains.kotlin.native.cocoapods")
 }
 
 kotlin {
@@ -45,6 +46,18 @@ kotlin {
             implementation(libs.kotlin.test)
         }
     }
+
+    cocoapods {
+        summary = "YYCD Shared KMP Module"
+        homepage = "https://github.com/ddorsner/yycd"
+        version = "1.0"
+        ios.deploymentTarget = "14.0"
+        framework {
+            baseName = "Shared"
+        }
+        podfile = project.file("../iosApp/Podfile")
+    }
+
 }
 
 android {

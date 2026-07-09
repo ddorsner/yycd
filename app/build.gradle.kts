@@ -48,14 +48,8 @@ dependencies {
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
     implementation(libs.core.ktx)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.espresso.core)
 
-    implementation(libs.core.ktx.v1120)
-    implementation(libs.appcompat.v171)
-    implementation(libs.material.v1110)
-    implementation(libs.constraintlayout.v221)
+    implementation(libs.constraintlayout)
     implementation(libs.recyclerview)
     implementation(libs.cardview)
 

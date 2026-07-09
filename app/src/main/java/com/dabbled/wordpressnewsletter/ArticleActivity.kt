@@ -124,7 +124,7 @@ class ArticleActivity : AppCompatActivity() {
     }
 
     private fun fetchLocationDetails() {
-        CoroutineScope(Dispatchers.IO).launch {
+        lifecycleScope.launch {
             try {
                 val location = repository.getLocationDetail(locationId)
                 withContext(Dispatchers.Main) {
@@ -149,7 +149,7 @@ class ArticleActivity : AppCompatActivity() {
             Toast.makeText(this, "Loading newsletters...", Toast.LENGTH_SHORT).show()
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
+        lifecycleScope.launch {
             try {
                 val postsData = repository.getPostsForLocation(locationId, page)
 

@@ -2,7 +2,7 @@
 
 Technical documentation for maintaining the Yes You Can Dance (YYCD) Kotlin Multiplatform mobile application.
 
-**Last updated:** July 2026 (KMP branch)
+**Last updated:** July 2026  
 **Supersedes:** the Android-only sections of TECHNICAL-REFERENCE.md
 
 ---

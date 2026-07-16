@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() {
     private fun fetchSplashData() {
         Log.d("MainActivity", "fetchSplashData: Starting")
 
-        CoroutineScope(Dispatchers.IO).launch {
+        lifecycleScope.launch {
             try {
                 val splashData = repository.getSplashData()
 
@@ -100,7 +100,7 @@ class MainActivity : AppCompatActivity() {
         Log.d("MainActivity", "fetchLocations: Starting")
         Toast.makeText(this, "Loading locations...", Toast.LENGTH_SHORT).show()
 
-        CoroutineScope(Dispatchers.IO).launch {
+        lifecycleScope.launch {
             try {
                 val locationsData = repository.getLocations()
 

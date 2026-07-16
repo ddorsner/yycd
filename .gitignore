@@ -9,7 +9,13 @@
 /.idea/assetWizardSettings.xml
 .DS_Store
 /build
+/app/build
+/shared/build
 /captures
 .externalNativeBuild
 .cxx
 local.properties
+.kotlin/
+.idea/
+iosApp/Pods/
+**/xcuserdata/

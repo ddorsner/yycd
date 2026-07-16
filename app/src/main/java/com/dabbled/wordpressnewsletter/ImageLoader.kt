@@ -18,7 +18,7 @@ object ImageLoader {
         }
 
         // Load from network
-        CoroutineScope(Dispatchers.IO).launch {
+        lifecycleScope.launch {
             try {
                 val url = URL(imageUrl)
                 val connection = url.openConnection()

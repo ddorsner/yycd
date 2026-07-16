@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "YesYouCanDance"
 include(":app")
+include(":shared")

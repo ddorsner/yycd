@@ -4,50 +4,58 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import android.widget.ImageView
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.net.URL
 
 object ImageLoader {
     private val imageCache = mutableMapOf<String, Bitmap>()
+    private val scope = CoroutineScope(Dispatchers.IO)
 
     fun loadImage(imageUrl: String, imageView: ImageView) {
-        // Check cache first
         imageCache[imageUrl]?.let {
             imageView.setImageBitmap(it)
+            imageView.visibility = android.view.View.VISIBLE
             return
         }
 
-        // Load from network
-        lifecycleScope.launch {
-            try {
-                val url = URL(imageUrl)
-                val connection = url.openConnection()
-                connection.doInput = true
-                connection.connectTimeout = 5000
-                connection.readTimeout = 5000
-                connection.connect()
+        // Tag the view with the URL it's currently loading, so if the view gets
+        // recycled to a different URL before this finishes, we skip the stale set.
+        imageView.tag = imageUrl
 
-                val input = connection.getInputStream()
-                val bitmap = BitmapFactory.decodeStream(input)
-                input.close()
+        scope.launch {
+            try {
+                val bitmap = URL(imageUrl).openConnection().run {
+                    doInput = true
+                    connectTimeout = 5000
+                    readTimeout = 5000
+                    connect()
+                    getInputStream().use { BitmapFactory.decodeStream(it) }
+                }
 
                 if (bitmap != null) {
-                    // Cache the bitmap
                     imageCache[imageUrl] = bitmap
-
                     withContext(Dispatchers.Main) {
-                        imageView.setImageBitmap(bitmap)
-                        imageView.visibility = android.view.View.VISIBLE
+                        if (imageView.tag == imageUrl) {
+                            imageView.setImageBitmap(bitmap)
+                            imageView.visibility = android.view.View.VISIBLE
+                        }
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-                        imageView.visibility = android.view.View.GONE
+                        if (imageView.tag == imageUrl) {
+                            imageView.visibility = android.view.View.GONE
+                        }
                     }
                 }
             } catch (e: Exception) {
                 Log.e("ImageLoader", "Error loading image: $imageUrl", e)
                 withContext(Dispatchers.Main) {
-                    imageView.visibility = android.view.View.GONE
+                    if (imageView.tag == imageUrl) {
+                        imageView.visibility = android.view.View.GONE
+                    }
                 }
             }
         }

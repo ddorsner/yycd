@@ -13,12 +13,13 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.dabbled.yycd.model.LocationDetail
 import com.dabbled.yycd.model.WordPressPost
 import com.dabbled.yycd.repository.YYCDRepository
-import kotlinx.coroutines.*
+import kotlinx.coroutines.launch
 
 class PostAdapter(
     private val posts: List<WordPressPost>,
@@ -124,19 +125,24 @@ class ArticleActivity : AppCompatActivity() {
     }
 
     private fun fetchLocationDetails() {
+        // lifecycleScope runs on Dispatchers.Main and is cancelled automatically
+        // in onDestroy. Ktor moves the network I/O off the main thread internally,
+        // so no withContext is needed to touch views after the call returns.
         lifecycleScope.launch {
             try {
                 val location = repository.getLocationDetail(locationId)
-                withContext(Dispatchers.Main) {
-                    supportActionBar?.title = location.name
-                    locationDetail = location
-                    Log.d("ArticleActivity", "Location details loaded: ${location.name}")
-                }
+
+                supportActionBar?.title = location.name
+                locationDetail = location
+                Log.d("ArticleActivity", "Location details loaded: ${location.name}")
+
             } catch (e: Exception) {
                 Log.e("ArticleActivity", "Error fetching location details", e)
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@ArticleActivity, "Error loading location details: ${e.message}", Toast.LENGTH_LONG).show()
-                }
+                Toast.makeText(
+                    this@ArticleActivity,
+                    "Error loading location details: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
@@ -153,36 +159,47 @@ class ArticleActivity : AppCompatActivity() {
             try {
                 val postsData = repository.getPostsForLocation(locationId, page)
 
-                withContext(Dispatchers.Main) {
-                    if (page == 1) {
-                        posts.clear()
-                        posts.addAll(postsData)
-                        adapter = PostAdapter(posts) { post -> openArticleDetail(post) }
-                        recyclerView.adapter = adapter
-                    } else {
-                        val oldSize = posts.size
-                        posts.addAll(postsData)
-                        adapter.notifyItemRangeInserted(oldSize, postsData.size)
+                if (page == 1) {
+                    posts.clear()
+                    posts.addAll(postsData)
+                    adapter = PostAdapter(posts) { post -> openArticleDetail(post) }
+                    recyclerView.adapter = adapter
+                } else {
+                    val oldSize = posts.size
+                    posts.addAll(postsData)
+                    adapter.notifyItemRangeInserted(oldSize, postsData.size)
 
-                        if (postsData.isNotEmpty()) {
-                            Toast.makeText(this@ArticleActivity, "Loaded ${postsData.size} more newsletters", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-
-                    currentPage = page
-                    hasMorePages = postsData.size == 10
-                    isLoading = false
-
-                    if (posts.isEmpty()) {
-                        Toast.makeText(this@ArticleActivity, "No newsletters found for this location", Toast.LENGTH_SHORT).show()
+                    if (postsData.isNotEmpty()) {
+                        Toast.makeText(
+                            this@ArticleActivity,
+                            "Loaded ${postsData.size} more newsletters",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
+
+                currentPage = page
+                hasMorePages = postsData.size == 10
+
+                if (posts.isEmpty()) {
+                    Toast.makeText(
+                        this@ArticleActivity,
+                        "No newsletters found for this location",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
             } catch (e: Exception) {
                 Log.e("ArticleActivity", "Error fetching posts", e)
-                withContext(Dispatchers.Main) {
-                    isLoading = false
-                    Toast.makeText(this@ArticleActivity, "Error loading newsletters: ${e.message}", Toast.LENGTH_LONG).show()
-                }
+                Toast.makeText(
+                    this@ArticleActivity,
+                    "Error loading newsletters: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            } finally {
+                // Reset in finally so a cancelled or failed request never
+                // leaves isLoading stuck true and blocks all future pagination.
+                isLoading = false
             }
         }
     }
@@ -240,7 +257,12 @@ class ArticleActivity : AppCompatActivity() {
                 if (mapIntent.resolveActivity(packageManager) != null) {
                     startActivity(mapIntent)
                 } else {
-                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}")))
+                    startActivity(
+                        Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse("https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}")
+                        )
+                    )
                 }
                 dialog.dismiss()
             }

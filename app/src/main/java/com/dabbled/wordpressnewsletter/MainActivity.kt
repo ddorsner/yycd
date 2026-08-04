@@ -11,9 +11,10 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.dabbled.yycd.model.Location
 import com.dabbled.yycd.repository.YYCDRepository
-import kotlinx.coroutines.*
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -68,30 +69,33 @@ class MainActivity : AppCompatActivity() {
     private fun fetchSplashData() {
         Log.d("MainActivity", "fetchSplashData: Starting")
 
+        // lifecycleScope runs on Dispatchers.Main and is cancelled automatically
+        // in onDestroy. Ktor moves the network I/O off the main thread internally,
+        // so no withContext is needed to touch views after the call returns.
         lifecycleScope.launch {
             try {
                 val splashData = repository.getSplashData()
 
-                withContext(Dispatchers.Main) {
-                    titleText.text = splashData.splashText
+                titleText.text = splashData.splashText
 
-                    if (splashData.titleUrl.isNotEmpty()) {
-                        ImageLoader.loadImage(splashData.titleUrl, logoImage)
-                    }
+                if (splashData.titleUrl.isNotEmpty()) {
+                    ImageLoader.loadImage(splashData.titleUrl, logoImage)
+                }
 
-                    if (splashData.splashUrl.isNotEmpty()) {
-                        ImageLoader.loadImage(splashData.splashUrl, splashImage)
-                    } else {
-                        splashImage.visibility = View.GONE
-                    }
+                if (splashData.splashUrl.isNotEmpty()) {
+                    ImageLoader.loadImage(splashData.splashUrl, splashImage)
+                } else {
+                    splashImage.visibility = View.GONE
                 }
 
             } catch (e: Exception) {
                 Log.e("MainActivity", "fetchSplashData: Error", e)
-                withContext(Dispatchers.Main) {
-                    titleText.text = getString(R.string.yes_you_can_dance_newsletter)
-                    Toast.makeText(this@MainActivity, "Error loading splash data: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
+                titleText.text = getString(R.string.yes_you_can_dance_newsletter)
+                Toast.makeText(
+                    this@MainActivity,
+                    "Error loading splash data: ${e.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
@@ -104,29 +108,29 @@ class MainActivity : AppCompatActivity() {
             try {
                 val locationsData = repository.getLocations()
 
-                withContext(Dispatchers.Main) {
-                    locations.clear()
-                    locations.addAll(locationsData)
+                locations.clear()
+                locations.addAll(locationsData)
 
-                    val spinnerItems = mutableListOf("Select a location")
-                    spinnerItems.addAll(locations.map { it.name })
+                val spinnerItems = mutableListOf("Select a location")
+                spinnerItems.addAll(locations.map { it.name })
 
-                    val spinnerAdapter = ArrayAdapter(
-                        this@MainActivity,
-                        android.R.layout.simple_spinner_item,
-                        spinnerItems
-                    )
-                    spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                    locationSpinner.adapter = spinnerAdapter
+                val spinnerAdapter = ArrayAdapter(
+                    this@MainActivity,
+                    android.R.layout.simple_spinner_item,
+                    spinnerItems
+                )
+                spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                locationSpinner.adapter = spinnerAdapter
 
-                    Log.d("MainActivity", "fetchLocations: Spinner populated with ${locations.size} locations")
-                }
+                Log.d("MainActivity", "fetchLocations: Spinner populated with ${locations.size} locations")
 
             } catch (e: Exception) {
                 Log.e("MainActivity", "fetchLocations: Error", e)
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@MainActivity, "Error loading locations: ${e.message}", Toast.LENGTH_LONG).show()
-                }
+                Toast.makeText(
+                    this@MainActivity,
+                    "Error loading locations: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }

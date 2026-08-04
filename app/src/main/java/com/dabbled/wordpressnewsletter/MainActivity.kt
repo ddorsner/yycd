@@ -15,6 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import com.dabbled.yycd.model.Location
 import com.dabbled.yycd.repository.YYCDRepository
 import kotlinx.coroutines.launch
+import coil3.load
 
 class MainActivity : AppCompatActivity() {
 
@@ -79,11 +80,13 @@ class MainActivity : AppCompatActivity() {
                 titleText.text = splashData.splashText
 
                 if (splashData.titleUrl.isNotEmpty()) {
-                    ImageLoader.loadImage(splashData.titleUrl, logoImage)
+                    logoImage.load(splashData.titleUrl)
                 }
 
                 if (splashData.splashUrl.isNotEmpty()) {
-                    ImageLoader.loadImage(splashData.splashUrl, splashImage)
+                    splashImage.load(splashData.splashUrl) {
+                        listener(onError = { _, _ -> splashImage.visibility = View.GONE })
+                    }
                 } else {
                     splashImage.visibility = View.GONE
                 }

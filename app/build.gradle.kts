@@ -26,15 +26,12 @@ android {
             )
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
+
     buildFeatures {
         viewBinding = true
     }
-    kotlinOptions {
-        jvmTarget = "11"
+    kotlin {
+        jvmToolchain(21)
     }
 }
 
@@ -48,17 +45,18 @@ dependencies {
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
     implementation(libs.core.ktx)
-
-    implementation(libs.constraintlayout)
     implementation(libs.recyclerview)
     implementation(libs.cardview)
 
-    implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.kotlinx.coroutines.android)
-    
     implementation(libs.lifecycle.runtime.ktx)
 
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+
+    // Coil (Android View integration, not Compose)
+    implementation(libs.coil)
+    implementation(libs.coil.network.okhttp)
+
     testImplementation(libs.junit)
-    androidTestImplementation(libs.junit)
     androidTestImplementation(libs.espresso)
 }
